@@ -107,6 +107,38 @@ class JinjaEvaluationTest(test_base.ExpressionEvaluatorTest):
             self.evaluator.evaluate(expr, data)
         )
 
+    def test_raw_block_mixed_jinja_and_yaql_expressions(self):
+        data = {
+            'jinja1': 'foo',
+            'jinja2': 'bar',
+            'yaql1': 'baz',
+            'yaql2': 'foo'
+        }
+
+        expr = (
+            '{% raw %}{{ jinja1 }} {{ jinja2 }} <% ctx().yaql2 %>{% endraw %}'
+        )
+        self.assertEqual(
+            '{{ jinja1 }} {{ jinja2 }} <% ctx().yaql2 %>',
+            self.evaluator.evaluate(expr, data)
+        )
+
+        expr = (
+            '{% raw %}<% ctx().yaql1 %> {{ jinja1 }} {{ jinja2 }} <% ctx().yaql2 %>{% endraw %}'
+        )
+        self.assertEqual(
+            '<% ctx().yaql1 %> {{ jinja1 }} {{ jinja2 }} <% ctx().yaql2 %>',
+            self.evaluator.evaluate(expr, data)
+        )
+
+        expr = (
+            '{% raw %}<% ctx().yaql1 %> <% ctx().yaql2 %>{% endraw %}'
+        )
+        self.assertEqual(
+            '<% ctx().yaql1 %> <% ctx().yaql2 %>',
+            self.evaluator.evaluate(expr, data)
+        )
+
     def test_mix_block_and_expr_eval(self):
         expr = (
             '{{ ctx().a }}{% for i in ctx().x %}{{ i }}{% endfor %}{{ ctx().d }} and '
